@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Assignment - IBSSR Admin{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 2rem auto;">
+    <div style="display: flex; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); align-items: center; margin-bottom: 0.75rem;">
+        <a href="{% url 'admin_dashboard' %}" style="color: var(--text-muted); text-decoration: none;">Dashboard</a>
+        <span>/</span>
+        <a href="{% url 'admin_assignments' %}" style="color: var(--text-muted); text-decoration: none;">Assignments</a>
+        <span>/</span>
+        <span style="color: #fff;">Edit</span>
+    </div>
+
+    <div class="glass-card">
+        <h3 style="margin-bottom: 0.5rem; background: linear-gradient(135deg, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Reassign Exam Credentials</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.75rem;">Exam: <strong>{{ assignment.exam.title }}</strong></p>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="exam_code">Exam Access Code</label>
+                <input type="text" id="exam_code" name="exam_code" value="{{ assignment.exam_code }}" class="form-control" placeholder="EXAM CODE" required>
+                <small style="color: var(--text-muted); font-size: 0.7rem; display: block; margin-top: 0.25rem;">Changing this code affects all candidates sharing it.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="assigned_email">Authorized Candidate Email</label>
+                <input type="email" id="assigned_email" name="assigned_email" value="{{ assignment.assigned_email }}" class="form-control" placeholder="candidate@example.com" required>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+                <a href="{% url 'admin_assignments' %}" class="btn btn-secondary" style="flex: 1;">Cancel</a>
+                <button type="submit" class="btn btn-primary" style="flex: 2;">Save Reassignment <i class="fa-solid fa-floppy-disk"></i></button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

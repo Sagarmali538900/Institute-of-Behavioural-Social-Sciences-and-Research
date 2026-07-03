@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Instructions: {{ session.exam.title }} - IBSSR Portal{% endblock %}
+
+{% block content %}
+<div style="max-width: 700px; margin: 3rem auto;">
+    <div class="glass-card">
+        <h2 style="margin-bottom: 0.5rem; background: linear-gradient(135deg, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Assessment Instructions</h2>
+        <h4 style="color: var(--accent-cyan); margin-bottom: 1.5rem;">{{ session.exam.title }}</h4>
+
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+            <p style="margin-bottom: 1rem;"><strong style="color: #fff;">Candidate:</strong> {{ session.candidate.full_name }} ({{ session.candidate.email }})</p>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
+                Please read the following guidelines carefully before starting. Once you click "Begin", the countdown timer for the first section will start immediately.
+            </p>
+
+            <h5 style="color: #fff; margin-bottom: 0.75rem;"><i class="fa-solid fa-list-check"></i> Section Timers & Navigation</h5>
+            <ul style="color: var(--text-muted); font-size: 0.9rem; padding-left: 1.25rem; margin-bottom: 1.5rem;">
+                <li style="margin-bottom: 0.5rem;">This psychological exam is divided into timed sections. Each section has its own individual time limit.</li>
+                <li style="margin-bottom: 0.5rem;">Your answers are saved automatically in the background as you select them. You do not need to click save.</li>
+                <li style="margin-bottom: 0.5rem;"><strong style="color: var(--accent-rose);">Important:</strong> If the timer for a section expires, all responses will be auto-saved and the system will automatically advance you to the next section. You cannot return to a completed section.</li>
+                <li style="margin-bottom: 0.5rem;">If the timer for the final section expires, the exam will be automatically submitted and scored.</li>
+            </ul>
+
+            <h5 style="color: #fff; margin-bottom: 0.75rem;"><i class="fa-solid fa-clock"></i> Exam Sections Breakdown</h5>
+            <div class="table-container" style="margin-top: 0.5rem;">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Section Name</th>
+                            <th>Time Limit</th>
+                            <th>Questions Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for section in session.exam.sections.all %}
+                            <tr>
+                                <td><strong>{{ section.name }}</strong></td>
+                                <td>{{ section.duration_display }}</td>
+                                <td>{{ section.questions.count }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3" style="text-align: center;">No sections created for this exam.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <form method="POST" action="{% url 'exam_start' session_id=session.id %}" style="text-align: center;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.1rem; border-radius: 12px;" {% if not session.exam.sections.exists %}disabled{% endif %}>
+                Begin Assessment <i class="fa-solid fa-play"></i>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

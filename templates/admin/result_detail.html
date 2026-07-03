@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}Result: {{ session.candidate.full_name }} - {{ session.exam.title }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <div style="display: flex; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); align-items: center; margin-bottom: 0.75rem;">
+        <a href="{% url 'admin_dashboard' %}" style="color: var(--text-muted); text-decoration: none;">Dashboard</a>
+        <span>/</span>
+        <a href="{% url 'admin_results' %}" style="color: var(--text-muted); text-decoration: none;">Results</a>
+        <span>/</span>
+        <span style="color: #fff;">Detailed Scorecard</span>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h2 style="background: linear-gradient(135deg, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Detailed Scorecard</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Question-by-question candidate response audit.</p>
+        </div>
+        <a href="{% url 'admin_results' %}" class="btn btn-secondary">
+            <i class="fa-solid fa-chevron-left"></i> Back to Results
+        </a>
+    </div>
+</div>
+
+<!-- Candidate Profiler and Score Header -->
+<div style="display: flex; gap: 2rem; margin-bottom: 3rem; flex-wrap: wrap; align-items: stretch;">
+    <!-- Candidate Info Card -->
+    <div class="glass-card" style="flex: 2; min-width: 320px; display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem;">
+        <div>
+            <span style="font-size: 0.75rem; color: var(--accent-cyan); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;"><i class="fa-solid fa-user-check"></i> Candidate Profile</span>
+            <h3 style="color: #fff; margin-top: 0.25rem; margin-bottom: 1rem;">{{ session.candidate.full_name }}</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.9rem; color: var(--text-muted);">
+                <p><strong>Email ID:</strong> <br><span style="color: #fff;">{{ session.candidate.email }}</span></p>
+                <p><strong>Mobile No:</strong> <br><span style="color: #fff;">{{ session.candidate.mobile_number }}</span></p>
+                <p><strong>Access Code:</strong> <br><code style="background: rgba(255,255,255,0.05); padding: 0.1rem 0.3rem; border-radius: 4px; color: var(--accent-cyan);">{{ session.assignment.exam_code }}</code></p>
+                <p><strong>Completed On:</strong> <br><span style="color: #fff;">{{ result.completed_at|date:"M d, Y H:i" }}</span></p>
+            </div>
+        </div>
+        <div style="margin-top: 1.5rem; border-top: 1px solid var(--glass-border); padding-top: 1rem; font-size: 0.9rem; color: var(--text-muted);">
+            <strong>Exam Title:</strong> <span style="color: #fff; font-weight: 600;">{{ exam.title }}</span>
+        </div>
+    </div>
+
+    <!-- Circular Score Graphic -->
+    <div class="glass-card" style="flex: 1; min-width: 250px; text-align: center; display: flex; flex-direction: column; justify-content: center; padding: 1.5rem;">
+        <span style="font-size: 0.75rem; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Final Calculations</span>
+        <div class="result-score-circle" style="margin: 1rem auto; height: 120px; width: 120px; border-width: 5px;">
+            <div class="result-score-pct" style="font-size: 1.8rem;">{{ result.overall_score_percentage }}%</div>
+            <div class="result-score-label" style="font-size: 0.65rem;">Overall</div>
+        </div>
+    </div>
+</div>
+
+<!-- Section Breakdown Cards -->
+<div class="glass-card" style="margin-bottom: 3rem; padding: 1.5rem;">
+    <h4 style="color: #fff; margin-bottom: 1.5rem;"><i class="fa-solid fa-chart-bar"></i> Section scores breakdown</h4>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+        {% for sec_res in result.section_results.all %}
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 8px; padding: 1rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="font-weight: 500; font-size: 0.9rem; color: #fff;">{{ sec_res.section.name }}</span>
+                    <strong style="color: var(--accent-cyan);">{{ sec_res.score_percentage }}%</strong>
+                </div>
+                <div class="section-score-bar-bg" style="height: 6px;">
+                    <div class="section-score-bar" style="width: {{ sec_res.score_percentage }}%; background: linear-gradient(to right, var(--primary), var(--accent-cyan));"></div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Detailed response audit sheet -->
+<h3 style="margin-bottom: 1.5rem; color: #fff;"><i class="fa-solid fa-clipboard-list"></i> Responses Audit Sheet</h3>
+
+{% for sec in sheet %}
+    <div class="glass-card" style="margin-bottom: 2rem; padding: 1.5rem;">
+        <h4 style="color: var(--accent-cyan); border-bottom: 1px solid var(--glass-border); padding-bottom: 0.75rem; margin-bottom: 1.5rem;"><i class="fa-regular fa-folder-open"></i> Section: {{ sec.section.name }}</h4>
+
+        <div style="display: flex; flex-direction: column; gap: 2rem;">
+            {% for item in sec.questions_data %}
+                <div class="admin-question-card" style="margin-bottom: 0; {% if not item.answered %}opacity: 0.65; border-color: rgba(244, 63, 94, 0.2);{% endif %}">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                            Question {{ forloop.counter }} - {% if item.question.question_type == 'single_select' %}Single Choice{% else %}Multi-Select{% endif %}
+                        </span>
+                        
+                        <!-- Question Score badge -->
+                        <span style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0.25rem 0.75rem; font-size: 0.8rem; font-weight: 700; color: #fff;">
+                            Earned Score: <strong style="color: var(--accent-green);">{{ item.q_earned }}</strong> / {{ item.q_max }}
+                        </span>
+                    </div>
+
+                    <h4 style="color: #fff; font-weight: 500; line-height: 1.4; margin-bottom: 1rem;">{{ item.question.text }}</h4>
+
+                    {% if item.question.image %}
+                        <div style="margin: 1rem 0;">
+                            <img src="{{ item.question.image.url }}" alt="Thumbnail" style="max-height: 100px; border-radius: 4px; border: 1px solid var(--glass-border);">
+                        </div>
+                    {% endif %}
+
+                    {% if not item.answered %}
+                        <div class="alert alert-error" style="padding: 0.5rem 1rem; font-size: 0.85rem; margin-top: 1rem; margin-bottom: 0.5rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-circle-exclamation"></i> Candidate skipped/did not answer this question.
+                        </div>
+                    {% endif %}
+
+                    <!-- Options list -->
+                    <ul class="admin-opt-list">
+                        {% for opt in item.question.options.all %}
+                            <!-- Class bindings: Correct if score > 0, Selected if in item.selected_options -->
+                            <li class="admin-opt-item {% if opt in item.selected_options %}selected{% endif %} {% if opt.score > 0 %}correct{% endif %}">
+                                <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                    {% if opt in item.selected_options %}
+                                        <i class="fa-solid {% if item.question.question_type == 'single_select' %}fa-circle-dot{% else %}fa-square-check{% endif %}" style="color: var(--accent-pink);"></i>
+                                    {% else %}
+                                        <i class="fa-regular {% if item.question.question_type == 'single_select' %}fa-circle{% else %}fa-square{% endif %}" style="color: var(--text-muted);"></i>
+                                    {% endif %}
+                                    {{ opt.text }}
+                                </span>
+                                
+                                <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">
+                                    {% if opt in item.selected_options %}
+                                        <span style="color: var(--accent-pink); margin-right: 0.5rem; text-transform: uppercase;">[Candidate Marked]</span>
+                                    {% endif %}
+                                    Option Score: +{{ opt.score }}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% empty %}
+    <p style="color: var(--text-muted); font-style: italic;">No audit sheet available.</p>
+{% endfor %}
+
+{% endblock %}

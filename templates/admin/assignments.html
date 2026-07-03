@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Assignments - IBSSR Admin{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2 style="background: linear-gradient(135deg, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Email & Exam Code Assignments</h2>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Authorize candidate emails and generate access codes.</p>
+</div>
+
+<div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+    <!-- Left Column: Assignment Form -->
+    <div style="flex: 1; min-width: 320px;" class="glass-card">
+        <h4 style="color: var(--accent-cyan); margin-bottom: 1.25rem;"><i class="fa-solid fa-plus-circle"></i> Create New Assignments</h4>
+        
+        <form method="POST">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="alert alert-error" style="padding: 0.5rem; margin-top: 0.5rem; font-size: 0.85rem;">
+                            {{ field.errors.0 }}
+                        </div>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 0.25rem;">{{ field.help_text }}</small>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                Generate & Assign <i class="fa-solid fa-check-double"></i>
+            </button>
+        </form>
+    </div>
+
+    <!-- Right Column: Active Assignments List -->
+    <div style="flex: 2; min-width: 350px;" class="glass-card">
+        <h4 style="color: #fff; margin-bottom: 1.25rem;"><i class="fa-solid fa-address-book"></i> Active Assignments</h4>
+        
+        <div class="table-container" style="border: none; margin-top: 0;">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Exam Code</th>
+                        <th>Assigned Email</th>
+                        <th>Exam Title</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assignments %}
+                        <tr>
+                            <td>
+                                <code style="background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; color: var(--accent-cyan);">
+                                    {{ assignment.exam_code }}
+                                </code>
+                                <button onclick="copyExamLink('{{ assignment.exam_code }}')" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; margin-left: 0.25rem;" title="Copy Exam Link">
+                                    <i class="fa-regular fa-copy"></i> Copy
+                                </button>
+                            </td>
+                            <td><strong style="color: #fff;">{{ assignment.assigned_email }}</strong></td>
+                            <td style="font-size: 0.9rem; color: var(--text-muted);">{{ assignment.exam.title }}</td>
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; gap: 0.25rem; justify-content: flex-end; align-items: center;">
+                                    <a href="{% url 'edit_assignment' assignment_id=assignment.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.7rem; font-size: 0.8rem;" title="Reassign">
+                                        <i class="fa-solid fa-user-pen"></i> Reassign
+                                    </a>
+                                    <form method="POST" action="{% url 'delete_assignment' assignment_id=assignment.id %}" onsubmit="return confirm('Revoke access for this candidate?');" style="margin: 0;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger" style="padding: 0.35rem 0.7rem; font-size: 0.8rem;" title="Revoke">
+                                            <i class="fa-solid fa-user-xmark"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 4rem 2rem;">
+                                <i class="fa-solid fa-envelope-open-text" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                                <h3>No Active Assignments</h3>
+                                <p style="margin-top: 0.5rem;">Use the generator form on the left to assign access codes to candidates.</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyExamLink(code) {
+    const link = window.location.origin + '/?code=' + code;
+    navigator.clipboard.writeText(link).then(() => {
+        alert('Copied Exam Link to Clipboard:\n' + link);
+    }).catch(err => {
+        console.error('Copy failed:', err);
+    });
+}
+</script>
+{% endblock %}

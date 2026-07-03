@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Exams List - IBSSR Admin{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h2 style="background: linear-gradient(135deg, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Exams Management</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Create and modify psychological assessments.</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{% url 'exam_import' %}" class="btn btn-secondary" style="border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.05); color: #a5b4fc;">
+            <i class="fa-solid fa-file-import"></i> Import Exam
+        </a>
+        <a href="{% url 'exam_create' %}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Create New Exam
+        </a>
+    </div>
+</div>
+
+<div class="glass-card" style="padding: 1.5rem;">
+    <div class="table-container" style="border: none; margin-top: 0;">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Exam Title</th>
+                    <th>Sections Count</th>
+                    <th>Questions Count</th>
+                    <th>Date Created</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exam in exams %}
+                    <tr>
+                        <td>
+                            <strong style="font-size: 1.1rem; color: #fff;">{{ exam.title }}</strong>
+                            {% if exam.description %}
+                                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">{{ exam.description|truncatewords:15 }}</div>
+                            {% endif %}
+                        </td>
+                        <td><span style="background: rgba(139, 92, 246, 0.1); border: 1px solid var(--primary); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #c084fc;">{{ exam.total_sections }} sections</span></td>
+                        <td><span style="background: rgba(6, 182, 212, 0.1); border: 1px solid var(--accent-cyan); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #22d3ee;">{{ exam.total_questions }} questions</span></td>
+                        <td style="color: var(--text-muted); font-size: 0.9rem;">{{ exam.created_at|date:"M d, Y H:i" }}</td>
+                        <td style="text-align: right;">
+                            <div style="display: inline-flex; gap: 0.5rem; justify-content: flex-end;">
+                                <a href="{% url 'exam_detail' exam_id=exam.id %}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                                    <i class="fa-solid fa-folder-open"></i> Manage
+                                </a>
+                                {% if exam.created_by == request.user or is_owner %}
+                                <a href="{% url 'exam_edit' exam_id=exam.id %}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: rgba(255,255,255,0.05);">
+                                    <i class="fa-solid fa-pen-to-square"></i> Edit
+                                </a>
+                                <a href="{% url 'exam_delete' exam_id=exam.id %}" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 4rem 2rem;">
+                            <i class="fa-solid fa-clipboard-question" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                            <h3>No Exams Created</h3>
+                            <p style="margin-top: 0.5rem;">Click the "Create New Exam" button above to get started.</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

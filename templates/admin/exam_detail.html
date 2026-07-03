@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Builder: {{ exam.title }} - IBSSR Admin{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <div style="display: flex; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); align-items: center; margin-bottom: 0.75rem;">
+        <a href="{% url 'admin_dashboard' %}" style="color: var(--text-muted); text-decoration: none;">Dashboard</a>
+        <span>/</span>
+        <a href="{% url 'exam_list' %}" style="color: var(--text-muted); text-decoration: none;">Exams</a>
+        <span>/</span>
+        <span style="color: #fff;">Builder</span>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h2 style="background: linear-gradient(135deg, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ exam.title }}</h2>
+            {% if exam.description %}
+                <p style="color: var(--text-muted); margin-top: 0.25rem; font-size: 0.95rem;">{{ exam.description }}</p>
+            {% endif %}
+        </div>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <a href="{% url 'exam_export_json' exam_id=exam.id %}" class="btn btn-secondary" title="Export as JSON">
+                <i class="fa-solid fa-file-code"></i> Export JSON
+            </a>
+            <a href="{% url 'exam_export_excel' exam_id=exam.id %}" class="btn btn-secondary" title="Export as Excel">
+                <i class="fa-solid fa-file-excel"></i> Export Excel
+            </a>
+            {% if can_edit %}
+            <a href="{% url 'exam_import_overwrite' exam_id=exam.id %}" class="btn btn-secondary" style="border-color: rgba(244, 63, 94, 0.4); background: rgba(244, 63, 94, 0.05); color: #f43f5e;" title="Overwrite with new file">
+                <i class="fa-solid fa-file-signature"></i> Overwrite/Import
+            </a>
+            <a href="{% url 'exam_edit' exam_id=exam.id %}" class="btn btn-secondary">
+                <i class="fa-solid fa-pen-to-square"></i> Edit Title
+            </a>
+            <a href="{% url 'section_add' exam_id=exam.id %}" class="btn btn-primary">
+                <i class="fa-solid fa-circle-plus"></i> Add Section
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Sections List loop -->
+{% for section in sections %}
+    <div class="glass-card" style="margin-bottom: 2rem; padding: 1.5rem;">
+        <!-- Section Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <span style="font-size: 0.75rem; background: var(--primary-glow); border: 1px solid var(--primary); padding: 0.15rem 0.5rem; border-radius: 4px; color: #d8b4fe; font-weight: 700; text-transform: uppercase;">
+                    Order: {{ section.order }}
+                </span>
+                <h3 style="margin-top: 0.5rem; color: #fff;">{{ section.name }}</h3>
+                <span style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; display: inline-block;">
+                    <i class="fa-regular fa-clock"></i> Limit: <strong>{{ section.duration_display }}</strong>
+                </span>
+            </div>
+            
+            {% if can_edit %}
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="{% url 'question_add' section_id=section.id %}" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem; border-color: rgba(6, 182, 212, 0.3); background: rgba(6,182,212,0.05); color: #22d3ee;">
+                    <i class="fa-solid fa-plus-circle"></i> Add Question
+                </a>
+                <a href="{% url 'section_edit' section_id=section.id %}" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit Section
+                </a>
+                <a href="{% url 'section_delete' section_id=section.id %}" class="btn btn-danger" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                    <i class="fa-solid fa-trash-can"></i>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if section.description %}
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; font-style: italic; background: rgba(255,255,255,0.01); border-left: 3px solid var(--glass-border); padding-left: 0.75rem;">
+                {{ section.description }}
+            </p>
+        {% endif %}
+
+        <!-- Questions loop -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            {% for q in section.questions.all %}
+                <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.25rem; position: relative;">
+                    <!-- Question Action Buttons -->
+                    {% if can_edit %}
+                    <div style="position: absolute; right: 1.25rem; top: 1.25rem; display: flex; gap: 0.5rem;">
+                        <a href="{% url 'question_edit' question_id=q.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; border-color: rgba(255,255,255,0.05);">
+                            <i class="fa-solid fa-pen"></i> Edit
+                        </a>
+                        <a href="{% url 'question_delete' question_id=q.id %}" class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+                            <i class="fa-solid fa-trash"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Question details -->
+                    <div>
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">
+                            Question {{ forloop.counter }} - {% if q.question_type == 'single_select' %}Single Choice{% else %}Multi-Select{% endif %} (Order: {{ q.order }})
+                        </span>
+                        <h4 style="margin-top: 0.25rem; margin-bottom: 0.75rem; color: #fff; font-weight: 500; max-width: 80%;">{{ q.text }}</h4>
+
+                        <!-- Question image thumbnail -->
+                        {% if q.image %}
+                            <div style="margin: 0.75rem 0;">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;"><i class="fa-regular fa-image"></i> Uploaded Image:</span>
+                                <img src="{{ q.image.url }}" alt="Thumbnail" style="max-height: 80px; border-radius: 4px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); padding: 4px;">
+                            </div>
+                        {% endif %}
+
+                        <!-- Options listed under question -->
+                        <div style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.03); padding-top: 0.75rem;">
+                            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Options & Score Weightings</span>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.5rem;">
+                                {% for opt in q.options.all %}
+                                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; justify-content: space-between; font-size: 0.85rem; align-items: center;">
+                                        <span style="color: var(--text-primary);">{{ opt.text }}</span>
+                                        <span style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem; color: #34d399; margin-left: 0.5rem;">
+                                            +{{ opt.score }}
+                                        </span>
+                                    </div>
+                                {% empty %}
+                                    <span style="color: var(--accent-rose); font-style: italic; font-size: 0.85rem;">No options created. Click edit to add options.</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div style="text-align: center; padding: 2rem; border: 1px dashed var(--glass-border); border-radius: 12px; color: var(--text-muted); font-size: 0.9rem;">
+                    No questions added to this section. Click "Add Question" above.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% empty %}
+    <div class="glass-card" style="text-align: center; padding: 4rem 2rem;">
+        <i class="fa-solid fa-list" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+        <h3>No Sections Created</h3>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;">Create at least one section to start designing questions for this exam.</p>
+        {% if can_edit %}
+        <a href="{% url 'section_add' exam_id=exam.id %}" class="btn btn-primary" style="margin-top: 1.5rem;">
+            Add Section <i class="fa-solid fa-circle-plus"></i>
+        </a>
+        {% endif %}
+    </div>
+{% endfor %}
+
+{% endblock %}

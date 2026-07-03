@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Email logs - IBSSR Admin{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2 style="background: linear-gradient(135deg, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Dispatched Email Logs</h2>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Review all system emails generated and dispatched to candidates.</p>
+</div>
+
+<div class="glass-card" style="padding: 1.5rem;">
+    <div class="table-container" style="border: none; margin-top: 0;">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Recipient</th>
+                    <th>Subject Line</th>
+                    <th>Dispatched Date</th>
+                    <th>Status Badge</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                    <tr>
+                        <td style="vertical-align: top;">
+                            <strong style="color: #fff;">{{ log.recipient_email }}</strong>
+                        </td>
+                        <td>
+                            <details style="cursor: pointer; outline: none;">
+                                <summary style="font-weight: 500; color: var(--accent-cyan); display: flex; align-items: center; gap: 0.5rem; outline: none; user-select: none;">
+                                    {{ log.subject }} <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(click to read body)</span>
+                                </summary>
+                                <div style="margin-top: 1rem; background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); border-radius: 8px; padding: 1rem; color: var(--text-muted); font-family: monospace; white-space: pre-wrap; font-size: 0.85rem; line-height: 1.5; cursor: default;">
+                                    {{ log.body }}
+                                </div>
+                            </details>
+                        </td>
+                        <td style="color: var(--text-muted); font-size: 0.9rem; vertical-align: top;">{{ log.sent_at|date:"M d, Y H:i:s" }}</td>
+                        <td style="vertical-align: top;">
+                            {% if 'Failed' in log.status %}
+                                <span style="background: rgba(244, 63, 94, 0.1); border: 1px solid var(--accent-rose); padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: #fb7185;">
+                                    {{ log.status }}
+                                </span>
+                            {% elif 'Mocked' in log.status %}
+                                <span style="background: rgba(6, 182, 212, 0.1); border: 1px solid var(--accent-cyan); padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: #22d3ee;">
+                                    {{ log.status }}
+                                </span>
+                            {% else %}
+                                <span style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: #34d399;">
+                                    {{ log.status }}
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 4rem 2rem;">
+                            <i class="fa-solid fa-list-check" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                            <h3>No Email Logs Recorded</h3>
+                            <p style="margin-top: 0.5rem;">Emails are recorded and logged here whenever a candidate completes a test session.</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

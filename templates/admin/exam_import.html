@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}Import Exam - IBSSR Admin{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 2rem auto;">
+    <div style="display: flex; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); align-items: center; margin-bottom: 0.75rem;">
+        <a href="{% url 'admin_dashboard' %}" style="color: var(--text-muted); text-decoration: none;">Dashboard</a>
+        <span>/</span>
+        <a href="{% url 'exam_list' %}" style="color: var(--text-muted); text-decoration: none;">Exams</a>
+        <span>/</span>
+        <span style="color: #fff;">Import</span>
+    </div>
+
+    <div class="glass-card">
+        <h2 style="margin-bottom: 1rem; background: linear-gradient(135deg, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            {% if exam %}Overwrite Exam: {{ exam.title }}{% else %}Import New Exam{% endif %}
+        </h2>
+        
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
+            Upload an assessment configuration file (.json or .xlsx) to import its structure.
+        </p>
+
+        {% if exam %}
+            <div class="alert alert-error" style="margin-bottom: 1.5rem; border-left: 4px solid var(--accent-rose); background: rgba(244, 63, 94, 0.1); padding: 1rem; border-radius: 8px;">
+                <h4 style="color: var(--accent-rose); margin-bottom: 0.25rem;"><i class="fa-solid fa-triangle-exclamation"></i> Warning: Overwrite Mode</h4>
+                <p style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.9);">
+                    Uploading a file will **permanently delete** all current sections, questions, options, and point configurations of <strong>"{{ exam.title }}"</strong>, replacing them entirely with the file contents. This action cannot be undone.
+                </p>
+            </div>
+        {% else %}
+            <div style="background: rgba(139, 92, 246, 0.05); border: 1px dashed rgba(139, 92, 246, 0.25); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; gap: 0.75rem; align-items: flex-start;">
+                <i class="fa-solid fa-circle-info" style="color: #c084fc; font-size: 1.25rem; margin-top: 0.1rem;"></i>
+                <div>
+                    <h4 style="color: #c084fc; font-size: 0.95rem; margin-bottom: 0.25rem;">New Exam Import</h4>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                        A brand new exam will be created. The exam title and description will be set to match the uploaded file.
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" id="import-form">
+            {% csrf_token %}
+            
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label for="file-upload" style="display: block; margin-bottom: 0.75rem; font-weight: 500;">Select Assessment File</label>
+                
+                <div id="drop-zone" style="border: 2px dashed var(--glass-border); border-radius: 12px; padding: 2.5rem 1.5rem; text-align: center; background: rgba(0,0,0,0.2); cursor: pointer; transition: border-color 0.2s, background-color 0.2s;">
+                    <i class="fa-solid fa-file-arrow-up" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem; opacity: 0.8;"></i>
+                    <p style="font-weight: 600; color: #fff; margin-bottom: 0.25rem;" id="drop-text">Drag and drop file here, or click to browse</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Supports JSON (.json) and Excel (.xlsx)</p>
+                    <input type="file" name="file" id="file-upload" accept=".json,.xlsx" style="display: none;" required>
+                </div>
+                
+                <div id="file-name-display" style="display: none; margin-top: 1rem; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 0.75rem 1rem; border-radius: 8px;">
+                    <i class="fa-solid fa-file-invoice" id="file-icon" style="font-size: 1.25rem;"></i>
+                    <span id="file-name" style="font-size: 0.9rem; font-weight: 500; color: #fff; flex: 1; word-break: break-all;"></span>
+                    <button type="button" id="remove-file-btn" style="background: none; border: none; color: var(--accent-rose); cursor: pointer; padding: 0.25rem;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+                {% if exam %}
+                    <a href="{% url 'exam_detail' exam_id=exam.id %}" class="btn btn-secondary" style="flex: 1;">Cancel</a>
+                {% else %}
+                    <a href="{% url 'exam_list' %}" class="btn btn-secondary" style="flex: 1;">Cancel</a>
+                {% endif %}
+                <button type="submit" class="btn btn-primary" id="submit-btn" style="flex: 2;">
+                    {% if exam %}Overwrite Exam <i class="fa-solid fa-circle-exclamation"></i>{% else %}Import Exam <i class="fa-solid fa-upload"></i>{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileUpload = document.getElementById('file-upload');
+    const fileNameDisplay = document.getElementById('file-name-display');
+    const fileNameSpan = document.getElementById('file-name');
+    const fileIcon = document.getElementById('file-icon');
+    const removeFileBtn = document.getElementById('remove-file-btn');
+    const dropText = document.getElementById('drop-text');
+    const form = document.getElementById('import-form');
+    const submitBtn = document.getElementById('submit-btn');
+
+    // Trigger input click
+    dropZone.addEventListener('click', () => {
+        fileUpload.click();
+    });
+
+    // Drag-over styling
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'var(--primary)';
+        dropZone.style.backgroundColor = 'rgba(139, 92, 246, 0.05)';
+    });
+
+    // Drag-leave styling
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = 'var(--glass-border)';
+        dropZone.style.backgroundColor = 'rgba(0,0,0,0.2)';
+    });
+
+    // Drop handler
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'var(--glass-border)';
+        dropZone.style.backgroundColor = 'rgba(0,0,0,0.2)';
+        
+        if (e.dataTransfer.files.length) {
+            fileUpload.files = e.dataTransfer.files;
+            handleFileSelected();
+        }
+    });
+
+    // File selected handler
+    fileUpload.addEventListener('change', () => {
+        handleFileSelected();
+    });
+
+    // Remove file handler
+    removeFileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileUpload.value = '';
+        fileNameDisplay.style.display = 'none';
+        dropZone.style.display = 'block';
+    });
+
+    function handleFileSelected() {
+        if (fileUpload.files.length) {
+            const file = fileUpload.files[0];
+            const name = file.name;
+            fileNameSpan.textContent = name;
+            
+            // Set icon by extension
+            if (name.endsWith('.xlsx')) {
+                fileIcon.className = 'fa-solid fa-file-excel';
+                fileIcon.style.color = '#10b981'; // Green
+            } else if (name.endsWith('.json')) {
+                fileIcon.className = 'fa-solid fa-file-code';
+                fileIcon.style.color = '#6366f1'; // Indigo
+            } else {
+                fileIcon.className = 'fa-solid fa-file-invoice';
+                fileIcon.style.color = 'var(--text-muted)';
+            }
+            
+            dropZone.style.display = 'none';
+            fileNameDisplay.style.display = 'flex';
+        }
+    }
+
+    form.addEventListener('submit', () => {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Uploading and Parsing... <i class="fa-solid fa-spinner fa-spin"></i>';
+    });
+</script>
+{% endblock %}

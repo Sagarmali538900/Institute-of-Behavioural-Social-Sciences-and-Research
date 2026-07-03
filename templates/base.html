@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}IBSSR Psychological Assessment Portal{% endblock %}</title>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Main Header / Navbar -->
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <i class="fa-solid fa-brain-circuit"></i> IBSSR Assessment
+        </a>
+        <ul class="nav-links">
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="{% url 'exam_list' %}" class="nav-link {% if 'exam' in request.path %}active{% endif %}"><i class="fa-solid fa-file-signature"></i> Exams</a></li>
+                {% if user.is_superuser %}
+                    <li><a href="{% url 'admin_franchises' %}" class="nav-link {% if 'franchise' in request.path %}active{% endif %}"><i class="fa-solid fa-store"></i> Franchises</a></li>
+                {% endif %}
+                <li><a href="{% url 'admin_assignments' %}" class="nav-link {% if 'assignment' in request.path %}active{% endif %}"><i class="fa-solid fa-envelope-open-text"></i> Assignments</a></li>
+                <li><a href="{% url 'admin_results' %}" class="nav-link {% if 'result' in request.path %}active{% endif %}"><i class="fa-solid fa-square-poll-vertical"></i> Results</a></li>
+                <li><a href="{% url 'admin_email_logs' %}" class="nav-link {% if 'email' in request.path %}active{% endif %}"><i class="fa-solid fa-list-check"></i> Email Logs</a></li>
+                <li><a href="{% url 'logout' %}" class="nav-link"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+            {% else %}
+                <li><a href="{% url 'login' %}" class="nav-link"><i class="fa-solid fa-lock"></i> Portal Login</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- Content Container -->
+    <main style="max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem;">
+        {% if messages %}
+            <div class="messages-container" style="margin-bottom: 1.5rem;">
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                        <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i> {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Custom Footer -->
+    <footer style="text-align: center; padding: 2rem 0; margin-top: 4rem; border-top: 1px solid var(--glass-border); color: var(--text-muted); font-size: 0.875rem;">
+        <p>&copy; 2026 IBSSR Psychological Assessment Platform. All rights reserved.</p>
+    </footer>
+
+    <!-- Custom JS -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

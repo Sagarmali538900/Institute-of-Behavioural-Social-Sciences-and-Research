@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - IBSSR Exam Portal{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h2 style="background: linear-gradient(135deg, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            {% if is_owner %}Administrator Dashboard{% else %}Franchise Workspace{% endif %}
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+            {% if is_owner %}Operational analytics and test builder dashboard.{% else %}Branch exam builder, candidate logs and score sheets overview.{% endif %}
+        </p>
+    </div>
+    <div style="display: flex; gap: 1rem;">
+        <a href="{% url 'exam_create' %}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Create Exam
+        </a>
+        <a href="{% url 'admin_assignments' %}" class="btn btn-secondary">
+            <i class="fa-solid fa-user-plus"></i> Assign Codes
+        </a>
+    </div>
+</div>
+
+<!-- Aggregated Metrics -->
+<div class="dashboard-grid">
+    <div class="glass-card metric-card">
+        <div class="metric-label">Total Exams</div>
+        <div class="metric-val" style="color: var(--primary);">{{ total_exams }}</div>
+        {% if is_owner %}
+            <div style="font-size: 0.75rem; color: var(--text-muted);"><a href="{% url 'exam_list' %}" style="color: var(--primary); text-decoration: none;">Manage Exams &rarr;</a></div>
+        {% else %}
+            <div style="font-size: 0.75rem; color: var(--text-muted);"><a href="{% url 'exam_list' %}" style="color: var(--primary); text-decoration: none;">Manage My Exams &rarr;</a></div>
+        {% endif %}
+    </div>
+    <div class="glass-card metric-card">
+        <div class="metric-label">Registered Candidates</div>
+        <div class="metric-val" style="color: var(--accent-cyan);">{{ total_candidates }}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">{% if is_owner %}Unique applicant logs{% else %}My branch applicants{% endif %}</div>
+    </div>
+    <div class="glass-card metric-card">
+        <div class="metric-label">Exam Sessions</div>
+        <div class="metric-val" style="color: var(--accent-pink);">{{ total_sessions }}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">{{ completed_sessions }} Completed ({{ active_sessions }} Active)</div>
+    </div>
+    <div class="glass-card metric-card">
+        <div class="metric-label">Average Score</div>
+        <div class="metric-val" style="color: var(--accent-green);">{{ avg_score }}%</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);"><a href="{% url 'admin_results' %}" style="color: var(--accent-green); text-decoration: none;">View Score Sheets &rarr;</a></div>
+    </div>
+</div>
+
+<!-- Detailed panels -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem; margin-top: 3rem;">
+    <!-- Recent Result submissions -->
+    <div class="glass-card" style="padding: 1.5rem;">
+        <h4 style="color: #fff; margin-bottom: 1.25rem;"><i class="fa-solid fa-clock-rotate-left"></i> Recent Submissions</h4>
+        
+        <div class="table-container" style="border: none; margin-top: 0;">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Candidate</th>
+                        <th>Exam</th>
+                        <th>Score</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in recent_results %}
+                        <tr>
+                            <td>
+                                <strong>{{ result.session.candidate.full_name }}</strong>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ result.session.candidate.email }}</div>
+                            </td>
+                            <td>{{ result.session.exam.title }}</td>
+                            <td><strong style="color: var(--accent-cyan);">{{ result.overall_score_percentage }}%</strong></td>
+                            <td>
+                                <a href="{% url 'admin_result_detail' result_id=result.id %}" style="color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.85rem;">
+                                    <i class="fa-solid fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">No test submissions recorded yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if recent_results %}
+            <div style="text-align: right; margin-top: 1rem;">
+                <a href="{% url 'admin_results' %}" style="color: var(--primary); text-decoration: none; font-size: 0.85rem; font-weight: 600;">View All Submissions &rarr;</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick Tool links and shortcuts -->
+    <div class="glass-card" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+        {% if is_owner %}
+            <div>
+                <h4 style="color: #fff; margin-bottom: 1.25rem;"><i class="fa-solid fa-screwdriver-wrench"></i> Administrative Shortcuts</h4>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Use these quick links to manage the data models and logs directly.</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <a href="/admin/tests/exam/" class="btn btn-secondary" style="justify-content: flex-start; text-align: left;">
+                        <i class="fa-solid fa-database" style="color: var(--primary);"></i> Django Admin - Exams Management
+                    </a>
+                    <a href="/admin/candidates/examassignment/" class="btn btn-secondary" style="justify-content: flex-start; text-align: left;">
+                        <i class="fa-solid fa-database" style="color: var(--accent-cyan);"></i> Django Admin - Code Assignments
+                    </a>
+                    <a href="/admin/reports/sentemaillog/" class="btn btn-secondary" style="justify-content: flex-start; text-align: left;">
+                        <i class="fa-solid fa-database" style="color: var(--accent-pink);"></i> Django Admin - Email Log Records
+                    </a>
+                </div>
+            </div>
+            
+            <div style="margin-top: 2rem; border-top: 1px solid var(--glass-border); padding-top: 1rem; font-size: 0.8rem; color: var(--text-muted);">
+                <p><i class="fa-solid fa-circle-info"></i> Standard credentials `admin` / `admin123` have full root access to the django administration suite.</p>
+            </div>
+        {% else %}
+            <div>
+                <h4 style="color: #fff; margin-bottom: 1.25rem;"><i class="fa-solid fa-briefcase"></i> Franchise workspace tools</h4>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Quick shortcuts to manage your exams, candidates and reports.</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <a href="{% url 'exam_list' %}" class="btn btn-secondary" style="justify-content: flex-start; text-align: left;">
+                        <i class="fa-solid fa-file-signature" style="color: var(--primary);"></i> Manage My Exams
+                    </a>
+                    <a href="{% url 'admin_assignments' %}" class="btn btn-secondary" style="justify-content: flex-start; text-align: left;">
+                        <i class="fa-solid fa-user-plus" style="color: var(--accent-cyan);"></i> Assign Candidate Codes
+                    </a>
+                    <a href="{% url 'admin_results' %}" class="btn btn-secondary" style="justify-content: flex-start; text-align: left;">
+                        <i class="fa-solid fa-square-poll-vertical" style="color: var(--accent-green);"></i> View My Results Scorecards
+                    </a>
+                    <a href="{% url 'admin_email_logs' %}" class="btn btn-secondary" style="justify-content: flex-start; text-align: left;">
+                        <i class="fa-solid fa-envelope-open-text" style="color: var(--accent-pink);"></i> Inspect Mail Outbound Logs
+                    </a>
+                </div>
+            </div>
+            
+            <div style="margin-top: 2rem; border-top: 1px solid var(--glass-border); padding-top: 1rem; font-size: 0.8rem; color: var(--text-muted);">
+                <p><i class="fa-solid fa-lock"></i> Your workspace is restricted to exams, assignments and candidate records created by your branch.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Candidate Results - IBSSR Admin{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h2 style="background: linear-gradient(135deg, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Assessment Results</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Review and inspect candidate scoring records.</p>
+    </div>
+
+    <!-- Search Form -->
+    <form method="GET" action="." style="display: flex; gap: 0.5rem; flex: 1; max-width: 400px; min-width: 250px;">
+        <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search name, email, exam, code..." style="padding: 0.5rem 1rem;">
+        <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1.25rem;"><i class="fa-solid fa-magnifying-glass"></i></button>
+        {% if query %}
+            <a href="." class="btn btn-secondary" style="padding: 0.5rem 1.25rem;"><i class="fa-solid fa-xmark"></i></a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="glass-card" style="padding: 1.5rem;">
+    <div class="table-container" style="border: none; margin-top: 0;">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Candidate</th>
+                    <th>Exam Taken</th>
+                    <th>Exam Code</th>
+                    <th>Score (%)</th>
+                    <th>Completed At</th>
+                    <th style="text-align: right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                    <tr>
+                        <td>
+                            <strong style="color: #fff;">{{ result.session.candidate.full_name }}</strong>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">{{ result.session.candidate.email }} | {{ result.session.candidate.mobile_number }}</div>
+                        </td>
+                        <td>{{ result.session.exam.title }}</td>
+                        <td>
+                            <code style="background: rgba(255,255,255,0.05); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: var(--text-muted);">
+                                {{ result.session.assignment.exam_code }}
+                            </code>
+                        </td>
+                        <td>
+                            {% if result.overall_score_percentage >= 75.0 %}
+                                <strong style="color: var(--accent-green); font-size: 1.1rem; text-shadow: 0 0 10px rgba(16, 185, 129, 0.15);">{{ result.overall_score_percentage }}%</strong>
+                            {% elif result.overall_score_percentage >= 50.0 %}
+                                <strong style="color: var(--accent-cyan); font-size: 1.1rem; text-shadow: 0 0 10px rgba(6, 182, 212, 0.15);">{{ result.overall_score_percentage }}%</strong>
+                            {% else %}
+                                <strong style="color: var(--accent-rose); font-size: 1.1rem; text-shadow: 0 0 10px rgba(244, 63, 94, 0.15);">{{ result.overall_score_percentage }}%</strong>
+                            {% endif %}
+                        </td>
+                        <td style="color: var(--text-muted); font-size: 0.9rem;">{{ result.completed_at|date:"M d, Y H:i" }}</td>
+                        <td style="text-align: right;">
+                            <a href="{% url 'admin_result_detail' result_id=result.id %}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                                <i class="fa-solid fa-square-poll-vertical"></i> View Scorecard
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 4rem 2rem;">
+                            <i class="fa-solid fa-square-poll-horizontal" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                            <h3>No Results Found</h3>
+                            <p style="margin-top: 0.5rem;">Either no tests have been completed, or your search query matches no records.</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

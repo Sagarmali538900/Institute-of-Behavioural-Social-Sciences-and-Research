@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete - IBSSR Admin{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 4rem auto;">
+    <div class="glass-card" style="text-align: center; border-color: rgba(244, 63, 94, 0.3);">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size: 4rem; color: var(--accent-rose); margin-bottom: 1.5rem; filter: drop-shadow(0 0 10px rgba(244, 63, 94, 0.2));"></i>
+        
+        <h2 style="color: #fff; margin-bottom: 1rem;">Are you absolutely sure?</h2>
+        
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5;">
+            You are about to delete: <br>
+            <strong style="color: #fff; font-size: 1.1rem; display: inline-block; margin-top: 0.5rem; background: rgba(244, 63, 94, 0.1); padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid rgba(244, 63, 94, 0.2);">
+                {{ object }}
+            </strong>
+            <br><br>
+            This action is permanent and cannot be undone. All dependent records (sections, questions, results, etc.) will also be permanently deleted.
+        </p>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div style="display: flex; gap: 1rem;">
+                <a href="{{ back_url }}" class="btn btn-secondary" style="flex: 1;">No, Cancel</a>
+                <button type="submit" class="btn btn-primary" style="flex: 1; background: var(--accent-rose); box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3);">
+                    Yes, Delete <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
