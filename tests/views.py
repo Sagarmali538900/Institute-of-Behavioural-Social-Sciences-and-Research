@@ -294,6 +294,7 @@ def export_exam_json(exam):
             for option in question.options.all():
                 q_data['options'].append({
                     'text': option.text,
+                    'image': str(option.image) if option.image else None,
                     'score': option.score
                 })
                 
@@ -314,7 +315,7 @@ def export_exam_excel(exam):
         "Exam Title", "Exam Description", 
         "Section Name", "Section Description", "Section Duration (Minutes)", "Section Duration (Seconds)", "Section Order",
         "Question Text", "Question Type", "Question Order", "Question Image Path",
-        "Option Text", "Option Score"
+        "Option Text", "Option Image Path", "Option Score"
     ]
     
     # Apply styling to headers
@@ -377,7 +378,8 @@ def export_exam_excel(exam):
                             ws.cell(row=row_idx, column=10, value=question.order)
                             ws.cell(row=row_idx, column=11, value=str(question.image) if question.image else "")
                             ws.cell(row=row_idx, column=12, value=option.text)
-                            ws.cell(row=row_idx, column=13, value=option.score)
+                            ws.cell(row=row_idx, column=13, value=str(option.image) if option.image else "")
+                            ws.cell(row=row_idx, column=14, value=option.score)
                             row_idx += 1
                             
     # Auto-adjust column widths for readability
@@ -443,6 +445,7 @@ def import_exam_json(file_obj):
                 if opt_text is not None:
                     parsed_sections[sec_key]['questions'][q_key]['options'].append({
                         'text': opt_text,
+                        'image': opt.get('image'),
                         'score': float(opt.get('score', 0.0))
                     })
                     
@@ -480,7 +483,8 @@ def import_exam_excel(file_obj):
         q_order = val(10)
         q_image = val(11)
         opt_text = val(12)
-        opt_score = val(13)
+        opt_image = val(13)
+        opt_score = val(14)
         
         if not exam_title and row_exam_title:
             exam_title = str(row_exam_title).strip()
@@ -537,6 +541,7 @@ def import_exam_excel(file_obj):
                     opt_score = 0.0
                 q_data['options'].append({
                     'text': str(opt_text).strip(),
+                    'image': str(opt_image).strip() if opt_image else None,
                     'score': opt_score
                 })
                 
@@ -590,10 +595,12 @@ def save_parsed_exam_data(parsed_data, exam=None, user=None):
                     option = Option(
                         question=question,
                         text=opt_val['text'],
+                        image=opt_val.get('image'),
                         score=opt_val['score']
                     )
                     option.save()
         return exam
+
 
 
 # --- EXPORT & IMPORT VIEWS ---

@@ -113,11 +113,18 @@
                             <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Options & Score Weightings</span>
                             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.5rem;">
                                 {% for opt in q.options.all %}
-                                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; justify-content: space-between; font-size: 0.85rem; align-items: center;">
-                                        <span style="color: var(--text-primary);">{{ opt.text }}</span>
-                                        <span style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem; color: #34d399; margin-left: 0.5rem;">
-                                            +{{ opt.score }}
-                                        </span>
+                                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem; align-items: flex-start; justify-content: space-between;">
+                                        {% if opt.image %}
+                                            <div style="margin-bottom: 0.25rem;">
+                                                <img src="{{ opt.image.url }}" alt="Choice Image" style="max-height: 40px; border-radius: 4px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); padding: 2px;">
+                                            </div>
+                                        {% endif %}
+                                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                                            <span style="color: var(--text-primary);">{{ opt.text }}</span>
+                                            <span style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem; color: #34d399; margin-left: 0.5rem;">
+                                                +{{ opt.score }}
+                                            </span>
+                                        </div>
                                     </div>
                                 {% empty %}
                                     <span style="color: var(--accent-rose); font-style: italic; font-size: 0.85rem;">No options created. Click edit to add options.</span>

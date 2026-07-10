@@ -63,13 +63,20 @@
                         <!-- Options selection form controls -->
                         <div class="options-container" style="margin-top: 2rem;">
                             {% for option in question.options.all %}
-                                <label class="option-wrapper">
-                                    <input type="{% if question.question_type == 'single_select' %}radio{% else %}checkbox{% endif %}" 
-                                           name="q_{{ question.id }}" 
-                                           value="{{ option.id }}" 
-                                           class="option-input">
-                                    <span class="option-indicator"></span>
-                                    {{ option.text }}
+                                <label class="option-wrapper" style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <input type="{% if question.question_type == 'single_select' %}radio{% else %}checkbox{% endif %}" 
+                                               name="q_{{ question.id }}" 
+                                               value="{{ option.id }}" 
+                                               class="option-input">
+                                        <span class="option-indicator"></span>
+                                        <span>{{ option.text }}</span>
+                                    </div>
+                                    {% if option.image %}
+                                        <div style="margin-left: 2rem; margin-top: 0.25rem;">
+                                            <img src="{{ option.image.url }}" alt="Option Image" style="max-width: 100%; max-height: 120px; border-radius: 6px; border: 1px solid var(--glass-border); padding: 4px; background: rgba(0,0,0,0.15);">
+                                        </div>
+                                    {% endif %}
                                 </label>
                             {% empty %}
                                 <p style="color: var(--accent-rose); font-style: italic;">No options created for this question.</p>

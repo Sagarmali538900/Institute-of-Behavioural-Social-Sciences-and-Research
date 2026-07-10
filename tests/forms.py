@@ -50,9 +50,10 @@ class QuestionForm(forms.ModelForm):
 class OptionForm(forms.ModelForm):
     class Meta:
         model = Option
-        fields = ['text', 'score']
+        fields = ['text', 'image', 'score']
         widgets = {
             'text': forms.TextInput(attrs={'placeholder': 'Option text', 'class': 'form-control'}),
+            'image': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
             'score': forms.NumberInput(attrs={'placeholder': 'Score/weight (e.g., 1.0 or 5.0)', 'step': '0.1', 'class': 'form-control'}),
         }
 

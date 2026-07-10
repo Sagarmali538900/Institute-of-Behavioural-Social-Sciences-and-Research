@@ -53,6 +53,20 @@
                             {{ hidden }}
                         {% endfor %}
                         
+                        <div style="flex: 1.5; min-width: 180px;">
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Choice Image</label>
+                            {{ opt_form.image }}
+                            {% if opt_form.image.errors %}
+                                <span style="color: var(--accent-rose); font-size: 0.75rem;">{{ opt_form.image.errors.0 }}</span>
+                            {% endif %}
+                            {% if opt_form.instance.image %}
+                                <div style="margin-top: 0.5rem;">
+                                    <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 0.1rem;">Current:</span>
+                                    <img src="{{ opt_form.instance.image.url }}" alt="Choice thumbnail" style="max-height: 40px; border-radius: 4px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); padding: 2px;">
+                                </div>
+                            {% endif %}
+                        </div>
+                        
                         <div style="flex: 3; min-width: 250px;">
                             <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Choice Text</label>
                             {{ opt_form.text }}

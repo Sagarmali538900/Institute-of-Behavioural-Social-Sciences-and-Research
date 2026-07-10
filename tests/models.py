@@ -79,6 +79,7 @@ class Question(models.Model):
 class Option(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
     text = models.CharField(max_length=500)
+    image = models.FileField(upload_to='option_images/', blank=True, null=True, help_text="Optional choice image")
     score = models.FloatField(default=0.0, help_text="Score weight/points for selecting this option")
 
     def __str__(self):

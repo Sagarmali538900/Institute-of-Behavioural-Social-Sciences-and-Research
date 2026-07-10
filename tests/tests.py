@@ -256,7 +256,7 @@ class ExamImportExportTestCase(TestCase):
             question_type="single_select",
             order=1
         )
-        self.opt_yes = Option.objects.create(question=self.q, text="Yes", score=10.0)
+        self.opt_yes = Option.objects.create(question=self.q, text="Yes", image="option_images/yes_helper.png", score=10.0)
         self.opt_no = Option.objects.create(question=self.q, text="No", score=0.0)
 
     def test_export_json_permissions_and_content(self):
@@ -292,6 +292,7 @@ class ExamImportExportTestCase(TestCase):
         self.assertEqual(len(q_data['options']), 2)
         
         self.assertEqual(q_data['options'][0]['text'], "Yes")
+        self.assertEqual(q_data['options'][0]['image'], "option_images/yes_helper.png")
         self.assertEqual(q_data['options'][0]['score'], 10.0)
 
     def test_export_excel_permissions_and_content(self):
@@ -319,7 +320,8 @@ class ExamImportExportTestCase(TestCase):
         self.assertEqual(ws.cell(row=2, column=5).value, 15)
         self.assertEqual(ws.cell(row=2, column=8).value, "Is 2+2=4?")
         self.assertEqual(ws.cell(row=2, column=12).value, "Yes")
-        self.assertEqual(ws.cell(row=2, column=13).value, 10.0)
+        self.assertEqual(ws.cell(row=2, column=13).value, "option_images/yes_helper.png")
+        self.assertEqual(ws.cell(row=2, column=14).value, 10.0)
 
     def test_import_json_create_new(self):
         """
@@ -343,7 +345,7 @@ class ExamImportExportTestCase(TestCase):
                             "question_type": "multi_select",
                             "order": 1,
                             "options": [
-                                {"text": "Opt A", "score": 2.0},
+                                {"text": "Opt A", "image": "option_images/a.png", "score": 2.0},
                                 {"text": "Opt B", "score": -1.0}
                             ]
                         }
@@ -376,6 +378,7 @@ class ExamImportExportTestCase(TestCase):
         self.assertEqual(question.options.count(), 2)
         
         opt1 = question.options.get(text="Opt A")
+        self.assertEqual(opt1.image, "option_images/a.png")
         self.assertEqual(opt1.score, 2.0)
 
     def test_import_json_overwrite_existing(self):
@@ -446,7 +449,7 @@ class ExamImportExportTestCase(TestCase):
             "Exam Title", "Exam Description", 
             "Section Name", "Section Description", "Section Duration (Minutes)", "Section Duration (Seconds)", "Section Order",
             "Question Text", "Question Type", "Question Order", "Question Image Path",
-            "Option Text", "Option Score"
+            "Option Text", "Option Image Path", "Option Score"
         ]
         for col, h in enumerate(headers, 1):
             ws.cell(row=1, column=col, value=h)
@@ -464,7 +467,8 @@ class ExamImportExportTestCase(TestCase):
         ws.cell(row=2, column=10, value=1)
         ws.cell(row=2, column=11, value="")
         ws.cell(row=2, column=12, value="Option A")
-        ws.cell(row=2, column=13, value=4.5)
+        ws.cell(row=2, column=13, value="option_images/opt_a.png")
+        ws.cell(row=2, column=14, value=4.5)
         
         # Add row 2 (Option B)
         ws.cell(row=3, column=1, value="Excel Exam")
@@ -479,7 +483,8 @@ class ExamImportExportTestCase(TestCase):
         ws.cell(row=3, column=10, value=1)
         ws.cell(row=3, column=11, value="")
         ws.cell(row=3, column=12, value="Option B")
-        ws.cell(row=3, column=13, value=0.0)
+        ws.cell(row=3, column=13, value="")
+        ws.cell(row=3, column=14, value=0.0)
         
         fp = io.BytesIO()
         wb.save(fp)
@@ -502,5 +507,7 @@ class ExamImportExportTestCase(TestCase):
         self.assertEqual(q.text, "Excel Question")
         self.assertEqual(q.question_type, "single_select")
         self.assertEqual(q.options.count(), 2)
-        self.assertEqual(q.options.get(text="Option A").score, 4.5)
+        opt_a = q.options.get(text="Option A")
+        self.assertEqual(opt_a.image, "option_images/opt_a.png")
+        self.assertEqual(opt_a.score, 4.5)
 
